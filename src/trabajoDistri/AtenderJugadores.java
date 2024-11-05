@@ -13,6 +13,7 @@ public class AtenderJugadores extends Thread {
 		try
 		{
 			//hace que los dos jugadores se comuniquen entre ellos
+			// Prueba push oscar
 		}
 		catch(IOException e) {e.printStackTrace();}
 	}
