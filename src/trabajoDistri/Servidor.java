@@ -12,7 +12,9 @@ public class Servidor {
 			while(true){
 				try{
 					Socket s1= ss.accept();
+					System.out.println("J1");
                     Socket s2= ss.accept();
+					System.out.println("J2");
                     AtenderJugadores p = new AtenderJugadores(s1,s2);
 					p.start();
 				}catch(IOException e) {e.printStackTrace();}
