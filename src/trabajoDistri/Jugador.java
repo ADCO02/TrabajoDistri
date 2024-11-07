@@ -15,6 +15,7 @@ public class Jugador {
 	
 	private static void buscaPartida(String hostServ, int portServ){
 		System.out.println("Buscando partida...");
+		
 		try(Socket servidor = new Socket(hostServ, portServ);
 			ObjectInputStream is = new ObjectInputStream(servidor.getInputStream());
 			ObjectOutputStream os = new ObjectOutputStream(servidor.getOutputStream());
