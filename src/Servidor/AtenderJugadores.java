@@ -1,4 +1,4 @@
-package trabajoDistri;
+package Servidor;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -13,23 +13,20 @@ public class AtenderJugadores extends Thread {
 		System.out.println("Emparejando...");
 		try (
             ObjectOutputStream out1 = new ObjectOutputStream(s1.getOutputStream());
-			ObjectInputStream in1 = new ObjectInputStream(s1.getInputStream());
             ObjectOutputStream out2 = new ObjectOutputStream(s2.getOutputStream());
-			ObjectInputStream in2 = new ObjectInputStream(s2.getInputStream());
         ) {
-			System.out.println("Entra");
             // Enviar orden
 			out1.writeObject(true);
 			out1.flush();
 			out2.writeObject(false);
-			// Envia host a j2
-            out2.writeObject((String)in1.readObject());
-			// Enviar puerto a j2
-            out2.writeObject((int)in1.readObject());
-			
-            out2.flush();
+			out2.flush();
+			try(ObjectInputStream in1 = new ObjectInputStream(s1.getInputStream())){
+				// Enviar puerto a j2
+	            out2.writeInt(in1.readInt());
+	            out2.flush();
+			}
 		}
-		catch(IOException | ClassNotFoundException e) {
+		catch(IOException e) {
 			e.printStackTrace();
 		}
 		finally{
