@@ -5,7 +5,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-//prueba
+import java.util.Scanner;
+
+import Partida.Tablero;
+
 public class Jugador {
     public static void main(String[] args) {
 		//meter menú de buscar partida / instrucciones etc
@@ -13,16 +16,38 @@ public class Jugador {
 		buscaPartida("localhost",12345);
 	}
     
+    
     private static void menu() {
+    	Scanner in=new Scanner(System.in);
     	int seleccion=0;
     	System.out.println("BIENVENIDO");
-    	while(seleccion!=6) {
+    	while(seleccion!=4) {
+    		muestraOpciones();
+    		String respuesta= in.nextLine();
+    		try {
+    			seleccion=Integer.parseInt(respuesta);
+    			switch(seleccion) {
+    			case 1:
+    				buscaPartida("localhost",12345);
+    			case 2:
+    				System.out.println("Esta opción aún está en desarrollo");
+    			case 3:
+    				mostrarInstrucciones();
+    			case 4:
+    				System.out.println("HASTA LA PRÓXIMA");
+    			default:
+    				System.out.println("¡Esa opción no existe!");
+    			}
+    		}catch(NumberFormatException e) {
+    			System.out.println("¡Introduce un número!");
+    			seleccion=0;
+    		}
     		
     	}
-    	System.out.println("HASTA LA PRÓXIMA");
+    	
     }
 	
-	private static Socket buscaPartida(String hostServ, int portServ){
+	private static void buscaPartida(String hostServ, int portServ){
 		System.out.println("Buscando partida...");
 		
 		try(Socket servidor = new Socket(hostServ, portServ);
@@ -38,6 +63,7 @@ public class Jugador {
 					ObjectOutputStream os = new ObjectOutputStream(servidor.getOutputStream());
 				){
 					System.out.println(ss.getLocalPort());
+					os.writeBytes(ss.getInetAddress().getHostAddress()+"\n");
 					os.writeInt(ss.getLocalPort());
 					os.flush();
 					Socket s= ss.accept();
@@ -45,24 +71,77 @@ public class Jugador {
 				}catch(IOException e) {e.printStackTrace();}
 			}else{
 				System.out.println("Jugador 2");
-				//String hostJug=(String) is.readObject();
+				String hostJug= is.readLine();
 				int portJug=is.readInt();
-				Socket s=new Socket("localhost",portJug);
+				Socket s=new Socket(hostJug,portJug);
 				jugador2(s);
 			}
 
 		} catch(IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		return null;
 	}
 	
 	private static void jugador1(Socket s) {
+		try(ObjectInputStream is = new ObjectInputStream(s.getInputStream());
+			ObjectOutputStream os = new ObjectOutputStream(s.getOutputStream());
+		){
+			Tablero t = new Tablero();
+			while(!t.verificarJuegoTerminado()) {
+				juegaTurno(t,os);
+				esperaTurno(is);
+				
+				
+		
+//				t.jugar();
+//				os.writeObject(t);
+//				System.out.println("Esperando al otro jugador a que juegue su turno");
+//				t=(Tablero) is.readObject();
+				
+			}
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
 	private static void jugador2(Socket s) {
 		
 	}
+	
+	private static void juegaTurno(Tablero t,ObjectOutputStream os) {
+//		t.iniciarTurno();
+//		while(!t.turnoTerminado()) {
+//			t.tiraDados();
+//			os.writeObject(t);
+//			if(t.vuelveATirar()) {
+//				t.bloqueaDados();
+//			}else {
+//				t.eligeCasilla();
+//				t.terminaTurno();
+//			}
+//			os.writeObject(t);
+//		}
+	}
+	
+	private static void esperaTurno(ObjectInputStream is) {
+		try {
+			Tablero t = (Tablero) is.readObject();
+		}catch(ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static void muestraOpciones() {
+    	System.out.println("¿QUÉ DESEAS HACER?");
+    	System.out.println(" 1. Jugar partida pública");
+    	System.out.println(" 2. Jugar partida privada");
+    	System.out.println(" 3. ¿Cómo se juega?");
+    	System.out.println(" 4. SALIR");
+    }
+    
+    private static void mostrarInstrucciones() {
+    	
+    }
 
 }
