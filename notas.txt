@@ -1,7 +1,22 @@
-en un futuro estaría bien pasar el ip del j1(servidor)
-
 Vito: clase tablero
 dece: clase jugador (menu, por codigo...)
 
 
 el jueves le preguntamos por la interfaz gráfica
+
+funciones que necesito que tenga tablero:
+-bool t.verificarJuegoTerminado()
+-void t.iniciarTurno();
+-void t.terminaTurno();
+-bool t.turnoTerminado()
+-void t.tiraDados();
+-bool t.vuelveATirar()
+-void t.bloqueaDados();
+-void t.eligeCasilla();
+-void t.terminaTurno();
+-void t.mostrarResultados();
+
+
+A adrian le falta: mostrar instrucciones, gestionar partidas privadas
+
+Vito: implementar instrucciones

@@ -89,16 +89,9 @@ public class Jugador {
 			Tablero t = new Tablero();
 			while(!t.verificarJuegoTerminado()) {
 				juegaTurno(t,os);
-				esperaTurno(is);
-				
-				
-		
-//				t.jugar();
-//				os.writeObject(t);
-//				System.out.println("Esperando al otro jugador a que juegue su turno");
-//				t=(Tablero) is.readObject();
-				
+				t=esperaTurno(is);
 			}
+			t.mostrarResultados();
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
@@ -106,30 +99,51 @@ public class Jugador {
 	}
 	
 	private static void jugador2(Socket s) {
-		
+		try(ObjectInputStream is = new ObjectInputStream(s.getInputStream());
+				ObjectOutputStream os = new ObjectOutputStream(s.getOutputStream());
+			){
+				Tablero t;
+				while(!t.verificarJuegoTerminado()) {
+					t=esperaTurno(is);
+					juegaTurno(t,os);
+				}
+				t.mostrarResultados();
+			}catch(IOException e) {
+				e.printStackTrace();
+			}
 	}
 	
 	private static void juegaTurno(Tablero t,ObjectOutputStream os) {
-//		t.iniciarTurno();
-//		while(!t.turnoTerminado()) {
-//			t.tiraDados();
-//			os.writeObject(t);
-//			if(t.vuelveATirar()) {
-//				t.bloqueaDados();
-//			}else {
-//				t.eligeCasilla();
-//				t.terminaTurno();
-//			}
-//			os.writeObject(t);
-//		}
+		t.iniciarTurno();
+		while(!t.turnoTerminado()) {
+			t.tiraDados();
+			os.writeObject(t);
+			if(t.vuelveATirar()) {
+				t.bloqueaDados();
+			}else {
+				t.eligeCasilla();
+				t.terminaTurno();
+			}
+			os.writeObject(t);
+		}
 	}
 	
-	private static void esperaTurno(ObjectInputStream is) {
+	private static Tablero esperaTurno(ObjectInputStream is) {
 		try {
 			Tablero t = (Tablero) is.readObject();
+			while(!t.turnoTerminado()) {
+				t.mostrarDados();
+				t = (Tablero) is.readObject();
+				if(!t.turnoTerminado()) {
+					t.mostrarBloqueados();
+					t = (Tablero) is.readObject();
+				}
+			}
+			return t;
 		}catch(ClassNotFoundException | IOException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 	
 	private static void muestraOpciones() {
