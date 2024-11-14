@@ -2,6 +2,7 @@ package Partida;
 
 public class Tablero {
 	public Tablero() {
+		//wate wate
 		
 	}
 	
