@@ -32,6 +32,7 @@ public class Jugador {
     				break;
     			case 2:
     				System.out.println("Esta opción aún está en desarrollo\n");
+    				partidaPrivada(in);
     				break;
     			case 3:
     				mostrarInstrucciones();
@@ -49,6 +50,11 @@ public class Jugador {
     		}
     	}
     	in.close();
+    }
+    
+    private static void partidaPrivada(Scanner in) {
+    	System.out.println("Introduce una contraseña para la partida");
+    	String contras = in.nextLine();
     }
 	
 	private static void buscaPartida(String hostServ, int portServ){
@@ -125,23 +131,23 @@ public class Jugador {
 		t.iniciarTurno();
 		while(!t.turnoTerminado()) {
 			t.tiraDados();
-			os.writeObject(t);
+			os.writeObject(t); //1
 			if(t.vuelveATirar()) {
 				t.bloqueaDados();
 			}else {
 				t.eligeCasilla();
 				t.terminaTurno();
 			}
-			os.writeObject(t);
+			os.writeObject(t); //2
 		}
 	}
 	
 	private static Tablero esperaTurno(ObjectInputStream is) {
 		try {
-			Tablero t = (Tablero) is.readObject();
+			Tablero t = (Tablero) is.readObject(); //1
 			while(!t.turnoTerminado()) {
 				t.mostrarDados();
-				t = (Tablero) is.readObject();
+				t = (Tablero) is.readObject(); //1 o 2
 				if(!t.turnoTerminado()) {
 					t.mostrarBloqueados();
 					t = (Tablero) is.readObject();

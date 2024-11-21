@@ -16,6 +16,6 @@ funciones que necesito que tenga tablero:
 -void t.mostrarResultados();
 
 
-A adrian le falta: mostrar instrucciones, gestionar partidas privadas
+A adrian le falta: gestionar concurrencia, hacer que jugador mande la contraseña
 
 Vito: implementar instrucciones
