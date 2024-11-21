@@ -21,6 +21,8 @@ public class AtenderJugadores extends Thread {
 			out2.writeObject(false);
 			out2.flush();
 			try(ObjectInputStream in1 = new ObjectInputStream(s1.getInputStream())){
+				//Enviar ip
+				out2.writeBytes(in1.readLine()+"\n");
 				// Enviar puerto a j2
 	            out2.writeInt(in1.readInt());
 	            out2.flush();
