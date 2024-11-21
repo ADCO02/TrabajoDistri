@@ -15,7 +15,7 @@ public class Jugador {
     	menu();
 		buscaPartida("localhost",12345);
 	}
-    
+    //hola prueba
     
     private static void menu() {
     	Scanner in=new Scanner(System.in);
@@ -29,22 +29,26 @@ public class Jugador {
     			switch(seleccion) {
     			case 1:
     				buscaPartida("localhost",12345);
+    				break;
     			case 2:
-    				System.out.println("Esta opción aún está en desarrollo");
+    				System.out.println("Esta opción aún está en desarrollo\n");
+    				break;
     			case 3:
     				mostrarInstrucciones();
+    				break;
     			case 4:
     				System.out.println("HASTA LA PRÓXIMA");
+    				break;
     			default:
-    				System.out.println("¡Esa opción no existe!");
+    				System.out.println("¡Esa opción no existe!\n");
+    				break;
     			}
     		}catch(NumberFormatException e) {
     			System.out.println("¡Introduce un número!");
     			seleccion=0;
     		}
-    		
     	}
-    	
+    	in.close();
     }
 	
 	private static void buscaPartida(String hostServ, int portServ){
@@ -62,19 +66,23 @@ public class Jugador {
 				try(ServerSocket ss= new ServerSocket(0);
 					ObjectOutputStream os = new ObjectOutputStream(servidor.getOutputStream());
 				){
-					System.out.println(ss.getLocalPort());
+					System.out.println("Puerto: "+ss.getLocalPort());
 					os.writeBytes(ss.getInetAddress().getHostAddress()+"\n");
 					os.writeInt(ss.getLocalPort());
 					os.flush();
 					Socket s= ss.accept();
-					jugador1(s);
+					//jugador1(s);
+    				System.out.println("Partida pública se ejecuta aquí");
 				}catch(IOException e) {e.printStackTrace();}
 			}else{
 				System.out.println("Jugador 2");
 				String hostJug= is.readLine();
+				System.out.println("Host: "+hostJug);
 				int portJug=is.readInt();
+				System.out.println("Puerto: "+portJug);
 				Socket s=new Socket(hostJug,portJug);
-				jugador2(s);
+				//jugador2(s);
+				System.out.println("Partida pública se ejecuta aquí");
 			}
 
 		} catch(IOException | ClassNotFoundException e) {
@@ -102,8 +110,8 @@ public class Jugador {
 		try(ObjectInputStream is = new ObjectInputStream(s.getInputStream());
 				ObjectOutputStream os = new ObjectOutputStream(s.getOutputStream());
 			){
-				Tablero t;
-				while(!t.verificarJuegoTerminado()) {
+				Tablero t=null;
+				while(t==null || !t.verificarJuegoTerminado()) {
 					t=esperaTurno(is);
 					juegaTurno(t,os);
 				}
@@ -113,7 +121,7 @@ public class Jugador {
 			}
 	}
 	
-	private static void juegaTurno(Tablero t,ObjectOutputStream os) {
+	private static void juegaTurno(Tablero t,ObjectOutputStream os) throws IOException {
 		t.iniciarTurno();
 		while(!t.turnoTerminado()) {
 			t.tiraDados();
@@ -155,7 +163,27 @@ public class Jugador {
     }
     
     private static void mostrarInstrucciones() {
-    	
+    	System.out.println("\n-YAZY-");
+    	System.out.println("Yazy es un juego de dados divertido y estratégico para 2 o más jugadores. "
+    			+ "El objetivo del juego es obtener la mayor cantidad de puntos posible combinando los "
+    			+ "resultados de los dados en diferentes categorías.\n");
+    	System.out.println("-CÓMO SE JUEGA-");
+    	System.out.println("El juego muestra el tablero de puntuación en pantalla, donde cada jugador "
+    			+ "tiene su propia hoja de puntuación. También se cuenta con 5 dados.");
+    	System.out.println("Cada jugador tiene tres tiradas por turno. Al inicio, lanza los 5 dados. "
+    			+ "Después de cada tirada, puedes seleccionar los dados que deseas mantener. Los dados "
+    			+ "no seleccionados se pueden volver a lanzar hasta un máximo de tres veces por turno.");
+    	System.out.println("Después de la tercera tirada (o cuando decidas no lanzar más), debes escoger "
+    			+ "una categoría de puntuación.\n");
+    	System.out.println("-CATEGORÍAS DE PUNTUACIÓN-");
+    	System.out.println("Unos, Dos, Tres, Cuatro, Cinco, Seis: Suma los valores de los dados que coincidan "
+    			+ "con el número seleccionado.");
+    	System.out.println("Trío o cuarteto: Tres o cuatro dados del mismo número. Suma el valor de todos los dados.");
+    	System.out.println("Full: Tres dados del mismo número y dos dados de otro número. Suma 25 puntos.");
+    	System.out.println("Escalera: cuando los 5 dados tienen números consecutivos diferentes (1-2-3-4-5 ó "
+    			+ "2-3-4-5-6). Suma 40 puntos");
+    	System.out.println("Yazy: Todos los dados deben ser del mismo número. Suma 50 puntos.");
+    	System.out.println("\n");
     }
 
 }

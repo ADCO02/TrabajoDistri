@@ -13,7 +13,6 @@ funciones que necesito que tenga tablero:
 -bool t.vuelveATirar()
 -void t.bloqueaDados();
 -void t.eligeCasilla();
--void t.terminaTurno();
 -void t.mostrarResultados();
 
 
