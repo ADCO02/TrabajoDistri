@@ -6,27 +6,32 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class AtenderJugadores extends Thread {
-    private Socket s1;
+    private ObjectOutputStream out1;
+	private ObjectOutputStream out2;
+	private ObjectInputStream in1;
+	private Socket s1;
 	private Socket s2;
-	public AtenderJugadores(Socket s1, Socket s2) {this.s1= s1;this.s2=s2;}
+	public AtenderJugadores(ObjectOutputStream out1, ObjectOutputStream out2, ObjectInputStream in1, Socket s1, Socket s2) {
+		this.out1= out1;
+		this.in1=in1;
+		this.out2=out2;
+		this.s1=s1;
+		this.s2=s2;
+	}
 	public void run() {
 		System.out.println("Emparejando...");
-		try (
-            ObjectOutputStream out1 = new ObjectOutputStream(s1.getOutputStream());
-            ObjectOutputStream out2 = new ObjectOutputStream(s2.getOutputStream());
-        ) {
+		try {
             // Enviar orden
-			out1.writeObject(true);
+			out1.writeBoolean(true);
 			out1.flush();
-			out2.writeObject(false);
+			out2.writeBoolean(false);
 			out2.flush();
-			try(ObjectInputStream in1 = new ObjectInputStream(s1.getInputStream())){
-				//Enviar ip
-				out2.writeBytes(in1.readLine()+"\n");
-				// Enviar puerto a j2
-	            out2.writeInt(in1.readInt());
-	            out2.flush();
-			}
+			//Enviar ip
+			out2.writeBytes(in1.readLine()+"\n");
+			// Enviar puerto a j2
+			out2.writeInt(in1.readInt());
+			out2.flush();
+			System.out.println("Partida iniciada");
 		}
 		catch(IOException e) {
 			e.printStackTrace();
