@@ -49,7 +49,7 @@ public class Jugador {
 				seleccion = 0;
 			}
 		}
-		// in.close();
+		in.close();
 	}
 
 	private static void partidaPrivada(String hostServ, int portServ, Scanner in) {
@@ -112,7 +112,7 @@ public class Jugador {
 		try (ObjectOutputStream os = new ObjectOutputStream(s.getOutputStream());
 			 ObjectInputStream is = new ObjectInputStream(s.getInputStream())) {
 			
-			Tablero t = new Tablero(2);  // Inicializamos el tablero para el jugador 1
+			Tablero t = new Tablero();  // Inicializamos el tablero para el jugador 1
 	
 			// Mientras el juego no haya terminado, seguimos con los turnos
 			while (!t.verificarJuegoTerminado()) {
@@ -137,6 +137,9 @@ public class Jugador {
 			while (t == null || !t.verificarJuegoTerminado()) {
 				miTurno = false;  // El jugador 2 espera su turno inicialmente
 				t = esperaTurno(is);  // Esperamos el tablero del jugador 1
+				t.jugadorActual = 1;
+				System.out.println("TurnoActual: " + t.jugadorActual);
+
 				if (t != null) {
 					juegaTurno(t, os);  // El jugador 2 juega su turno
 				}
@@ -148,7 +151,7 @@ public class Jugador {
 		}
 	}
 
-	private static void juegaTurno(Tablero t, ObjectOutputStream os) throws IOException {
+	private static synchronized void juegaTurno(Tablero t, ObjectOutputStream os) throws IOException {
 		if (!miTurno) {
 			System.out.println("Espera tu turno...");
 			return;
@@ -187,8 +190,7 @@ public class Jugador {
 		}
 	}
 	
-	
-	private static Tablero esperaTurno(ObjectInputStream is) {
+	private static synchronized Tablero esperaTurno(ObjectInputStream is) {
 		if (miTurno) {
 			System.out.println("Es tu turno, no puedes esperar.");
 			return null;
@@ -218,6 +220,7 @@ public class Jugador {
 		}
 		return null;
 	}
+	
 
 	private static void muestraOpciones() {
 		System.out.println("¿QUÉ DESEAS HACER?");

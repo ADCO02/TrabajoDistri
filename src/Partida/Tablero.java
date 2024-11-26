@@ -14,8 +14,8 @@ public class Tablero implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private int numJugadores;
-    private int jugadorActual;
+    private int numJugadores = 2;
+    public int jugadorActual;
     private int[] dados;
     private boolean[] dadosBloqueados;
     private transient Scanner scanner; // El Scanner no es serializable, por lo que lo marco como transient
@@ -27,8 +27,7 @@ public class Tablero implements Serializable {
     
     
 
-    public Tablero(int numJugadores) {
-        this.numJugadores = numJugadores;
+    public Tablero() {
         this.jugadorActual = 0;
         this.puntuaciones = new ArrayList<>();
         this.combinacionesCompletadas = new boolean[numJugadores][combinaciones.length];
@@ -83,10 +82,10 @@ public class Tablero implements Serializable {
         if (volverATirar == 0) {
             turnoCompleto = true;  // Si el jugador no vuelve a tirar, completa el turno
         }
-        
-        // Retorna true si vuelve a tirar, false si no
+    
         return volverATirar == 1;
     }
+    
     
     
     
@@ -97,7 +96,6 @@ public class Tablero implements Serializable {
         for (int i = 0; i < dados.length; i++) {
             int bloquear = -1; // Inicializamos con un valor no válido
     
-            // Bucle hasta que el jugador ingrese un valor válido (1 o 0)
             while (bloquear != 1 && bloquear != 0) {
                 System.out.print("¿Bloquear dado " + i + " (" + dados[i] + ")? (Sí: 1 / No: 0): ");
                 if (scanner.hasNextInt()) {  // Verifica que la entrada sea un número
@@ -115,6 +113,7 @@ public class Tablero implements Serializable {
         }
     }
     
+    
 
     public void mostrarBloqueados() {
         System.out.print("Estado de los dados: ");
@@ -125,59 +124,59 @@ public class Tablero implements Serializable {
         System.out.println();
     }
     
-   public void eligeCasilla() {
-    boolean seleccionValida = false;
-
-    // Validación previa
-    if (combinaciones == null || combinacionesCompletadas == null || combinacionesCompletadas[jugadorActual] == null) {
-        throw new IllegalStateException("El estado del tablero no está completamente inicializado.");
-    }
-
-    while (!seleccionValida) {
+    public void eligeCasilla() {
+        boolean seleccionValida = false;
+    
+        // Validación previa
+        if (combinaciones == null || combinacionesCompletadas == null || combinacionesCompletadas[jugadorActual] == null) {
+            throw new IllegalStateException("El estado del tablero no está completamente inicializado.");
+        }
+    
+        while (!seleccionValida) {
+            mostrarTablero();
+            System.out.println("Elige una combinación (0-" + (combinaciones.length - 1) + "): ");
+            
+            int combinacion;
+            try {
+                combinacion = scanner.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada inválida. Por favor ingresa un número.");
+                scanner.next(); // Limpiar el buffer del scanner
+                continue;
+            }
+    
+            // Validar índice de combinación
+            if (combinacion < 0 || combinacion >= combinaciones.length) {
+                System.out.println("Combinación no válida. Por favor elige un número entre 0 y " + (combinaciones.length - 1));
+                continue;
+            }
+    
+            // Validar si la combinación ya está ocupada
+            if (combinacionesCompletadas[jugadorActual][combinacion]) {
+                System.out.println("Combinación ya ocupada. Elige otra.");
+                continue;
+            }
+    
+            // Calcular puntuación
+            int puntaje = calcularPuntuacion(combinacion);
+            if (puntaje < 0) {
+                System.out.println("Puntuación calculada inválida. Intenta otra combinación.");
+                continue;
+            }
+    
+            // Registrar puntuación
+            if (registrarPuntuacion(combinacion, puntaje)) {
+                System.out.println("Combinación registrada: " + puntaje + " puntos.");
+                seleccionValida = true;
+                turnoCompleto = true; // Marcar el turno como completo
+                terminaTurno();       // Llamar al método para completar el turno
+            } else {
+                System.out.println("No se pudo registrar la puntuación. Intenta nuevamente.");
+            }
+        }
         mostrarTablero();
-        System.out.println("Elige una combinación (0-" + (combinaciones.length - 1) + "): ");
-        
-        int combinacion;
-        try {
-            combinacion = scanner.nextInt();
-        } catch (InputMismatchException e) {
-            System.out.println("Entrada inválida. Por favor ingresa un número.");
-            scanner.next(); // Limpiar el buffer del scanner
-            continue;
-        }
-
-        // Validar índice de combinación
-        if (combinacion < 0 || combinacion >= combinaciones.length) {
-            System.out.println("Combinación no válida. Por favor elige un número entre 0 y " + (combinaciones.length - 1));
-            continue;
-        }
-
-        // Validar si la combinación ya está ocupada
-        if (combinacionesCompletadas[jugadorActual][combinacion]) {
-            System.out.println("Combinación ya ocupada. Elige otra.");
-            continue;
-        }
-
-        // Calcular puntuación
-        int puntaje = calcularPuntuacion(combinacion);
-        if (puntaje < 0) {
-            System.out.println("Puntuación calculada inválida. Intenta otra combinación.");
-            continue;
-        }
-
-        // Registrar puntuación
-        if (registrarPuntuacion(combinacion, puntaje)) {
-            System.out.println("Combinación registrada: " + puntaje + " puntos.");
-            seleccionValida = true;
-            turnoCompleto = true; // Marcar el turno como completo
-            terminaTurno();       // Llamar al método para completar el turno
-        } else {
-            System.out.println("No se pudo registrar la puntuación. Intenta nuevamente.");
-        }
     }
-    mostrarTablero();
-}
-
+    
     
     
     
@@ -278,11 +277,12 @@ public class Tablero implements Serializable {
         }
         return false;
     }
-    public void siguienteJugador() {
+    /*public void siguienteJugador() {
         jugadorActual = (jugadorActual + 1) % numJugadores;
         mostrarTablero();  // Actualiza el tablero para el siguiente jugador
 
-    }
+    }*/
+
 
     public void mostrarTablero() {
         System.out.printf("%-15s %-15s %-15s\n", "Combinación", "Jugador 1", "Jugador 2");
@@ -300,10 +300,13 @@ public class Tablero implements Serializable {
  //  Método que devuelve un booleano si el turno ha terminado
  public void terminaTurno() {
     System.out.println("El jugador " + (jugadorActual + 1) + " ha terminado su turno.");
-    siguienteJugador();  // Cambiar al siguiente jugador.
+    //siguienteJugador();  // Cambiar al siguiente jugador.
+    jugadorActual = (jugadorActual + 1) % numJugadores;
+
     resetearDados();
     turnoCompleto = true;  // El turno ha terminado
 }
+
 
 
 private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
