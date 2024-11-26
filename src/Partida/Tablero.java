@@ -1,26 +1,31 @@
 package Partida;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Arrays;
+import java.util.InputMismatchException;
 
 public class Tablero implements Serializable {
+    private boolean turnoCompleto;  // Flag para controlar si el turno ha sido completado
+
     private static final long serialVersionUID = 1L;
 
     private int numJugadores;
     private int jugadorActual;
-    private List<int[]> puntuaciones;
-    private boolean[][] combinacionesCompletadas;
     private int[] dados;
     private boolean[] dadosBloqueados;
     private transient Scanner scanner; // El Scanner no es serializable, por lo que lo marco como transient
 
-    private final String[] combinaciones = {
-        "Unos - 0", "Doses - 1", "Treses - 2", "Cuatros - 3", "Cincos - 4", "Seises - 5",
-        "Tríos - 6", "Cuartetos - 7", "Full - 8", "Escalera - 9", "Perfecto - 10"
-    };
+    private String[] combinaciones = {"Unos", "Doses", "Treses", "Cuatros", "Cincos", "Seises", "Tríos", "Cuartetos", "Full", "Escalera", "Perfecto"};
+    private boolean[][] combinacionesCompletadas = new boolean[2][11];  // 2 jugadores, 11 combinaciones
+    private List<int[]> puntuaciones = new ArrayList<>();
+    
+    
+    
 
     public Tablero(int numJugadores) {
         this.numJugadores = numJugadores;
@@ -30,6 +35,8 @@ public class Tablero implements Serializable {
         this.dados = new int[5];
         this.dadosBloqueados = new boolean[5];
         this.scanner = new Scanner(System.in);
+        // Inicialización de las puntuaciones para cada jugador
+    
 
         for (int i = 0; i < numJugadores; i++) {
             puntuaciones.add(new int[combinaciones.length]);
@@ -39,17 +46,12 @@ public class Tablero implements Serializable {
     public void iniciarTurno() {
         resetearDados(); // Asegúrate de que todos los dados estén desbloqueados
         tiraDados();   // Lanza los dados al inicio del turno
+        turnoCompleto = false; // Resetea el flag al iniciar un nuevo turno
+
     }
 
     public boolean turnoTerminado() {
-        for (boolean[] combinaciones : combinacionesCompletadas) {
-            for (boolean completada : combinaciones) {
-                if (!completada) {
-                    return false; // Si alguna casilla está disponible, el turno no ha terminado.
-                }
-            }
-        }
-        return true; // Todas las casillas están ocupadas, el turno terminó.
+        return turnoCompleto;  // Devuelve true solo si el jugador ha terminado su turno
     }
 
     public void tiraDados() {
@@ -60,21 +62,59 @@ public class Tablero implements Serializable {
         }
     }
 
+
     public boolean vuelveATirar() {
-        System.out.println("¿Quieres volver a tirar los dados restantes? (Sí: 1 / No: 0)");
-        int volverATirar = scanner.nextInt();
+        int volverATirar = -1;  // Inicializamos con un valor no válido
+        Scanner scanner = new Scanner(System.in);  // Aseguramos que el scanner esté presente
+    
+        while (volverATirar != 0 && volverATirar != 1) {  // Mientras la entrada no sea ni 0 ni 1
+            System.out.println("¿Quieres volver a tirar los dados restantes? (Sí: 1 / No: 0)");
+            if (scanner.hasNextInt()) {  // Verificamos si la entrada es un número entero
+                volverATirar = scanner.nextInt();  // Leemos la opción del jugador
+                if (volverATirar != 0 && volverATirar != 1) {
+                    System.out.println("Por favor, ingresa 1 para volver a tirar o 0 para no.");
+                }
+            } else {
+                System.out.println("Entrada inválida. Por favor ingresa 1 o 0.");
+                scanner.next();  // Limpiar el buffer de entrada en caso de entrada no válida
+            }
+        }
+    
+        if (volverATirar == 0) {
+            turnoCompleto = true;  // Si el jugador no vuelve a tirar, completa el turno
+        }
+        
+        // Retorna true si vuelve a tirar, false si no
         return volverATirar == 1;
     }
+    
+    
+    
 
     public void bloqueaDados() {
         System.out.println("Introduce los índices de los dados que deseas bloquear (0 a 4). Introduce -1 para terminar:");
-
+    
         for (int i = 0; i < dados.length; i++) {
-            System.out.print("¿Bloquear dado " + i + " (" + dados[i] + ")? (Sí: 1 / No: 0): ");
-            int bloquear = scanner.nextInt();
-            dadosBloqueados[i] = (bloquear == 1);
+            int bloquear = -1; // Inicializamos con un valor no válido
+    
+            // Bucle hasta que el jugador ingrese un valor válido (1 o 0)
+            while (bloquear != 1 && bloquear != 0) {
+                System.out.print("¿Bloquear dado " + i + " (" + dados[i] + ")? (Sí: 1 / No: 0): ");
+                if (scanner.hasNextInt()) {  // Verifica que la entrada sea un número
+                    bloquear = scanner.nextInt();
+                    if (bloquear == 1 || bloquear == 0) {
+                        dadosBloqueados[i] = (bloquear == 1);
+                    } else {
+                        System.out.println("Por favor, ingresa 1 para bloquear o 0 para no bloquear.");
+                    }
+                } else {
+                    System.out.println("Entrada inválida. Por favor ingresa 1 o 0.");
+                    scanner.next(); // Limpiar el buffer si la entrada no es un número
+                }
+            }
         }
     }
+    
 
     public void mostrarBloqueados() {
         System.out.print("Estado de los dados: ");
@@ -85,26 +125,62 @@ public class Tablero implements Serializable {
         System.out.println();
     }
     
-    public void eligeCasilla() {
-        boolean seleccionValida = false;
-        while (!seleccionValida) {
-            mostrarTablero();
-            System.out.println("Elige una combinación (0-" + (combinaciones.length - 1) + "): ");
-            int combinacion = scanner.nextInt();
+   public void eligeCasilla() {
+    boolean seleccionValida = false;
 
-            if (combinacionesCompletadas[jugadorActual][combinacion]) {
-                System.out.println("Combinación ya ocupada. Elige otra.");
-            } else {
-                int puntaje = calcularPuntuacion(combinacion);
-                if (registrarPuntuacion(combinacion, puntaje)) {
-                    System.out.println("Combinación registrada: " + puntaje + " puntos.");
-                    seleccionValida = true;
-                }
-            }
-        }
-        mostrarTablero();
-
+    // Validación previa
+    if (combinaciones == null || combinacionesCompletadas == null || combinacionesCompletadas[jugadorActual] == null) {
+        throw new IllegalStateException("El estado del tablero no está completamente inicializado.");
     }
+
+    while (!seleccionValida) {
+        mostrarTablero();
+        System.out.println("Elige una combinación (0-" + (combinaciones.length - 1) + "): ");
+        
+        int combinacion;
+        try {
+            combinacion = scanner.nextInt();
+        } catch (InputMismatchException e) {
+            System.out.println("Entrada inválida. Por favor ingresa un número.");
+            scanner.next(); // Limpiar el buffer del scanner
+            continue;
+        }
+
+        // Validar índice de combinación
+        if (combinacion < 0 || combinacion >= combinaciones.length) {
+            System.out.println("Combinación no válida. Por favor elige un número entre 0 y " + (combinaciones.length - 1));
+            continue;
+        }
+
+        // Validar si la combinación ya está ocupada
+        if (combinacionesCompletadas[jugadorActual][combinacion]) {
+            System.out.println("Combinación ya ocupada. Elige otra.");
+            continue;
+        }
+
+        // Calcular puntuación
+        int puntaje = calcularPuntuacion(combinacion);
+        if (puntaje < 0) {
+            System.out.println("Puntuación calculada inválida. Intenta otra combinación.");
+            continue;
+        }
+
+        // Registrar puntuación
+        if (registrarPuntuacion(combinacion, puntaje)) {
+            System.out.println("Combinación registrada: " + puntaje + " puntos.");
+            seleccionValida = true;
+            turnoCompleto = true; // Marcar el turno como completo
+            terminaTurno();       // Llamar al método para completar el turno
+        } else {
+            System.out.println("No se pudo registrar la puntuación. Intenta nuevamente.");
+        }
+    }
+    mostrarTablero();
+}
+
+    
+    
+    
 
     public void mostrarDados() {
         System.out.print("Dados: ");
@@ -141,13 +217,8 @@ public class Tablero implements Serializable {
         System.out.println("\nEl ganador es el Jugador " + (ganador + 1) + " con " + maxPuntaje + " puntos.");
     }
 
-    public void finalizarTurno() {
-        System.out.println("Turno del Jugador " + (jugadorActual + 1) + " finalizado.");
-    }
 
-    public boolean esMiTurno() {
-        return jugadorActual == 0; // Cambia la condición según los turnos reales
-    }
+  
 
     public int calcularPuntuacion(int combinacion) {
         int[] contadorValores = new int[6];
@@ -198,16 +269,19 @@ public class Tablero implements Serializable {
     }
 
     public boolean registrarPuntuacion(int combinacion, int puntaje) {
-        if (combinacion >= 0 && combinacion < combinaciones.length && !combinacionesCompletadas[jugadorActual][combinacion]) {
+        if (combinacion >= 0 && combinacion < combinaciones.length 
+            && !combinacionesCompletadas[jugadorActual][combinacion]) {
+            
             puntuaciones.get(jugadorActual)[combinacion] = puntaje;
             combinacionesCompletadas[jugadorActual][combinacion] = true;
             return true;
         }
         return false;
     }
-
     public void siguienteJugador() {
         jugadorActual = (jugadorActual + 1) % numJugadores;
+        mostrarTablero();  // Actualiza el tablero para el siguiente jugador
+
     }
 
     public void mostrarTablero() {
@@ -224,10 +298,16 @@ public class Tablero implements Serializable {
     }
 
  //  Método que devuelve un booleano si el turno ha terminado
-    public void terminaTurno() {
-        System.out.println("El jugador " + (jugadorActual + 1) + " ha terminado su turno.");
-        siguienteJugador(); // Cambiar al siguiente jugador.
-        resetearDados(); 
-    }
+ public void terminaTurno() {
+    System.out.println("El jugador " + (jugadorActual + 1) + " ha terminado su turno.");
+    siguienteJugador();  // Cambiar al siguiente jugador.
+    resetearDados();
+    turnoCompleto = true;  // El turno ha terminado
+}
 
+
+private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+    ois.defaultReadObject();
+    this.scanner = new Scanner(System.in); // Reinicializar el scanner después de la deserialización
+}
 }
