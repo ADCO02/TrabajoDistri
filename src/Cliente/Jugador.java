@@ -112,14 +112,13 @@ public class Jugador {
 		try (ObjectOutputStream os = new ObjectOutputStream(s.getOutputStream());
 			 ObjectInputStream is = new ObjectInputStream(s.getInputStream())) {
 			
-			Tablero t = new Tablero();  // Inicializamos el tablero para el jugador 1
+			Tablero t = new Tablero(); 
 	
-			// Mientras el juego no haya terminado, seguimos con los turnos
 			while (!t.verificarJuegoTerminado()) {
-				juegaTurno(t, os);  // Jugador 1 juega su turno
-				t = esperaTurno(is);  // Esperamos el turno del jugador 2
+				juegaTurno(t, os);  
+				t = esperaTurno(is);  
 			}
-			t.mostrarResultados();  // Mostrar los resultados cuando el juego termine
+			t.mostrarResultados();
 		} catch (IOException e) {
 			System.out.println("Error de IO: " + e.getMessage());
 			e.printStackTrace();
@@ -131,17 +130,13 @@ public class Jugador {
 		try (ObjectOutputStream os = new ObjectOutputStream(s.getOutputStream());
 			 ObjectInputStream is = new ObjectInputStream(s.getInputStream())) {
 			
-			Tablero t = null;  // Inicializamos el tablero para el jugador 2
-	
-			// Mientras el tablero sea null o el juego no haya terminado
-			while (t == null || !t.verificarJuegoTerminado()) {
-				t = esperaTurno(is);  // Esperamos el tablero del jugador 1
+			Tablero t = null; 
 
-				if (t != null) {
-					juegaTurno(t, os);  // El jugador 2 juega su turno
-				}
+			while (t == null || !t.verificarJuegoTerminado()) {
+				t = esperaTurno(is); 
+				juegaTurno(t, os); 
 			}
-			t.mostrarResultados();  // Mostrar los resultados cuando el juego termine
+			t.mostrarResultados();
 		} catch (IOException e) {
 			System.out.println("Error de IO: " + e.getMessage());
 			e.printStackTrace();
@@ -150,51 +145,45 @@ public class Jugador {
 
 	private static void juegaTurno(Tablero t, ObjectOutputStream os) throws IOException {
 	
-			t.iniciarTurno();  // Inicia el turno para el jugador
-			System.out.println("Es tu turno: ");
+			t.iniciarTurno(); 
+			System.out.println("\nTU TURNO\n");
 	
 			while (!t.turnoTerminado()) {
-				System.out.println("¿Tirar dados?");
-				t.mostrarTablero();  // Muestra el estado del tablero
-				t.tiraDados();  // Tira los dados
-				t.mostrarDados();  // Muestra los dados resultantes
-		// checkear     	os.writeObject(t);
-				if (t.vuelveATirar()) {
-					t.bloqueaDados();  // Permite volver a tirar dados si es necesario
+				t.mostrarTablero();  
+				t.tiraDados();
+				t.mostrarDados();
+				os.writeObject(t);
+				if (t.intentosLibres()&&t.vuelveATirar()){
+					t.bloqueaDados();
+					os.writeObject(t);
 				} else {
-					t.eligeCasilla();  // Elige una casilla para registrar la combinación
-					//t.terminaTurno();  // Termina el turno
+					t.eligeCasilla();
+					t.terminaTurno();
 				}
 			}
 	
-			// Enviar el tablero actualizado después de terminar el turno
-			System.out.println("Enviando el tablero al oponente...");
 			os.reset();
 			os.writeObject(t);
-			os.flush();  // Asegura que los datos se envíen
-			System.out.println("Tablero enviado.");
+			os.flush();  
 	
-			// El turno ha terminado, ahora es el turno del oponente
-			System.out.println("El turno ha terminado. Ahora es el turno del oponente.");
+			System.out.println("El turno ha terminado.");
 	}
 	
 	private static  Tablero esperaTurno(ObjectInputStream is) {
+		System.out.println("\nTURNO DE TU OPONENTE\n");
 		try {
-			// Recibir el tablero del oponente
-			System.out.println("Esperando el tablero del oponente...");
 			Tablero t = (Tablero) is.readObject();
-			System.out.println("Tablero recibido del oponente.");
 	
 			while (!t.turnoTerminado()) {
-				t.mostrarDados();  // Mostrar los dados que ha tirado el oponente
-				t = (Tablero) is.readObject();  // Continuar recibiendo el tablero hasta que termine el turno
+				System.out.println("Le han salido los siguientes dados:");
+				t.mostrarDados();
+				t = (Tablero) is.readObject(); 
 				if (!t.turnoTerminado()) {
-					t.mostrarBloqueados();  // Mostrar los dados bloqueados si es necesario
+					System.out.println("El oponente ha bloqueados los siguientes dados:");
+					t.mostrarBloqueados();  
 				}
 			}
-	
-			// El turno del oponente ha terminado, ahora es el turno del jugador 1
-			System.out.println("El turno del oponente ha terminado. Ahora es tu turno.");
+			System.out.println("El turno del oponente ha terminado.");
 			return t;
 		} catch (ClassNotFoundException | IOException e) {
 			System.out.println("Error al recibir el tablero: " + e.getMessage());
