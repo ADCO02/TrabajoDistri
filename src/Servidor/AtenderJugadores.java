@@ -6,21 +6,21 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class AtenderJugadores extends Thread {
-    private ObjectOutputStream out1;
-	private ObjectOutputStream out2;
-	private ObjectInputStream in1;
 	private Socket s1;
 	private Socket s2;
-	public AtenderJugadores(ObjectOutputStream out1, ObjectOutputStream out2, ObjectInputStream in1, Socket s1, Socket s2) {
-		this.out1= out1;
-		this.in1=in1;
-		this.out2=out2;
+	public AtenderJugadores(Socket s1, Socket s2) {
 		this.s1=s1;
 		this.s2=s2;
 	}
 	public void run() {
 		System.out.println("Emparejando...");
 		try {
+			ObjectInputStream in1= new ObjectInputStream(s1.getInputStream());
+			ObjectOutputStream out1= new ObjectOutputStream(s1.getOutputStream());
+			ObjectInputStream in2 = new ObjectInputStream(s2.getInputStream()); //se crea para ir a la par con el jugador
+			ObjectOutputStream out2= new ObjectOutputStream(s2.getOutputStream());
+			
+			
             // Enviar orden
 			out1.writeBoolean(true);
 			out1.flush();

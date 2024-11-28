@@ -8,7 +8,7 @@ import java.util.HashMap;
 public class Servidor {
     private static final int puerto = 12345;
 	public static void main(String[] args) {
-		HashMap<String,AuxiliarSocket> jugadores = new HashMap<String,AuxiliarSocket>();
+		HashMap<String,Socket> jugadores = new HashMap<String,Socket>();
 		System.out.println("SERVIDOR ACTIVO");
 		try(ServerSocket ss= new ServerSocket(puerto)){
 			while(true){

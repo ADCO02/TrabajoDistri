@@ -1,5 +1,7 @@
 package Cliente;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -13,7 +15,6 @@ public class Jugador {
     public static void main(String[] args) {
     	menu();
 	}
-    //hola prueba
     
     private static void menu() {
     	Scanner in=new Scanner(System.in);
@@ -50,6 +51,10 @@ public class Jugador {
     	//in.close();
     }
     
+    private static void buscaPartida(String hostServ, int portServ){
+		introduceContra(hostServ, portServ, "");
+	}
+    
     private static void partidaPrivada(String hostServ, int portServ, Scanner in) {
     	System.out.println("Introduce una contraseña para la partida");
     	String contras = "";
@@ -65,11 +70,16 @@ public class Jugador {
 	private static void introduceContra(String hostServ, int portServ, String contra){
 		System.out.println("Buscando partida...");
 		try(Socket servidor = new Socket(hostServ, portServ);
-			ObjectInputStream is = new ObjectInputStream(servidor.getInputStream());
-			ObjectOutputStream os = new ObjectOutputStream(servidor.getOutputStream());
+			
 		){
-			os.writeBytes(contra + "\n");
-			os.flush();
+			DataOutputStream dos = new DataOutputStream(servidor.getOutputStream());
+			dos.writeBytes(contra + "\n");
+			dos.flush();
+			
+			
+			ObjectOutputStream os = new ObjectOutputStream(servidor.getOutputStream());
+			ObjectInputStream is = new ObjectInputStream(servidor.getInputStream());
+			
 			boolean ordenJug=is.readBoolean(); //true implica que va primero, false segundo. También decide cuál es servidor
 			System.out.println("¡PARTIDA ENCONTRADA!");
 
@@ -93,15 +103,14 @@ public class Jugador {
 				s.close();
 				System.out.println("Partida pública se ejecuta aquí");
 			}
-
+			
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	private static void buscaPartida(String hostServ, int portServ){
-		introduceContra(hostServ, portServ, "");
-	}
+	
+	
 	
 	private static void jugador1(Socket s) {
 		try(ObjectInputStream is = new ObjectInputStream(s.getInputStream());
@@ -137,7 +146,9 @@ public class Jugador {
 	private static void juegaTurno(Tablero t,ObjectOutputStream os) throws IOException {
 		t.iniciarTurno();
 		while(!t.turnoTerminado()) {
+			t.mostrarTablero();
 			t.tiraDados();
+			t.mostrarDados();
 			os.writeObject(t); //1
 			if(t.vuelveATirar()) {
 				t.bloqueaDados();
