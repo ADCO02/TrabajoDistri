@@ -137,8 +137,7 @@ public class Jugador {
 			while (t == null || !t.verificarJuegoTerminado()) {
 				miTurno = false;  // El jugador 2 espera su turno inicialmente
 				t = esperaTurno(is);  // Esperamos el tablero del jugador 1
-				t.jugadorActual = 1;
-				System.out.println("TurnoActual: " + t.jugadorActual);
+				//t.jugadorActual = 1;
 
 				if (t != null) {
 					juegaTurno(t, os);  // El jugador 2 juega su turno
@@ -151,7 +150,7 @@ public class Jugador {
 		}
 	}
 
-	private static synchronized void juegaTurno(Tablero t, ObjectOutputStream os) throws IOException {
+	private static void juegaTurno(Tablero t, ObjectOutputStream os) throws IOException {
 		if (!miTurno) {
 			System.out.println("Espera tu turno...");
 			return;
@@ -171,12 +170,13 @@ public class Jugador {
 					t.bloqueaDados();  // Permite volver a tirar dados si es necesario
 				} else {
 					t.eligeCasilla();  // Elige una casilla para registrar la combinación
-					t.terminaTurno();  // Termina el turno
+					//t.terminaTurno();  // Termina el turno
 				}
 			}
 	
 			// Enviar el tablero actualizado después de terminar el turno
 			System.out.println("Enviando el tablero al oponente...");
+			os.reset();
 			os.writeObject(t);
 			os.flush();  // Asegura que los datos se envíen
 			System.out.println("Tablero enviado.");
@@ -190,7 +190,7 @@ public class Jugador {
 		}
 	}
 	
-	private static synchronized Tablero esperaTurno(ObjectInputStream is) {
+	private static  Tablero esperaTurno(ObjectInputStream is) {
 		if (miTurno) {
 			System.out.println("Es tu turno, no puedes esperar.");
 			return null;
