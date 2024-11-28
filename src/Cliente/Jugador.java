@@ -1,5 +1,7 @@
 package Cliente;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -8,104 +10,102 @@ import java.net.Socket;
 import java.util.Scanner;
 
 import Partida.Tablero;
+
 public class Jugador {
 
-	private static boolean miTurno = true; // Indica si es el turno del jugador actual
-
-	public static void main(String[] args) {
-		menu();
+    public static void main(String[] args) {
+    	menu();
 	}
-	// hola prueba
-
-	private static void menu() {
-		Scanner in = new Scanner(System.in);
-		int seleccion = 0;
-		System.out.println("BIENVENIDO");
-		while (seleccion != 4) {
-			muestraOpciones();
-			String respuesta = in.nextLine();
-			try {
-				seleccion = Integer.parseInt(respuesta);
-				System.out.println("Has elegido la opción: " + seleccion);
-				switch (seleccion) {
-					case 1:
-						buscaPartida("localhost", 12345);
-						break;
-					case 2:
-						partidaPrivada("localhost", 12345, in);
-						break;
-					case 3:
-						mostrarInstrucciones();
-						break;
-					case 4:
-						System.out.println("HASTA LA PRÓXIMA");
-						break;
-					default:
-						System.out.println("¡Esa opción no existe!\n");
-						break;
-				}
-			} catch (NumberFormatException e) {
-				System.out.println("¡Introduce un número!\n");
-				seleccion = 0;
-			}
-		}
-		in.close();
+    
+    private static void menu() {
+    	Scanner in=new Scanner(System.in);
+    	int seleccion=0;
+    	System.out.println("BIENVENIDO");
+    	while(seleccion!=4) {
+    		muestraOpciones();
+    		String respuesta= in.nextLine();
+    		try {
+    			seleccion=Integer.parseInt(respuesta);
+				System.out.println("Has elegido la opción: "+seleccion);
+    			switch(seleccion) {
+    			case 1:
+    				buscaPartida("localhost",12345);
+    				break;
+    			case 2:
+    				partidaPrivada("localhost",12345,in);
+    				break;
+    			case 3:
+    				mostrarInstrucciones();
+    				break;
+    			case 4:
+    				System.out.println("HASTA LA PRÓXIMA");
+    				break;
+    			default:
+    				System.out.println("¡Esa opción no existe!\n");
+    				break;
+    			}
+    		}catch(NumberFormatException e) {
+    			System.out.println("¡Introduce un número!\n");
+    			seleccion=0;
+    		}
+    	}
+    	//in.close();
+    }
+    
+    private static void buscaPartida(String hostServ, int portServ){
+		introduceContra(hostServ, portServ, "");
 	}
-
-	private static void partidaPrivada(String hostServ, int portServ, Scanner in) {
-		System.out.println("Introduce una contraseña para la partida");
-		String contras = "";
+    
+    private static void partidaPrivada(String hostServ, int portServ, Scanner in) {
+    	System.out.println("Introduce una contraseña para la partida");
+    	String contras = "";
 		while (contras.equals("")) {
-			contras = in.nextLine();
-			if (contras.equals("")) {
+			contras=in.nextLine();
+			if(contras.equals("")){
 				System.out.println("Introduzca una contraseña!");
 			}
 		}
 		introduceContra(hostServ, portServ, contras);
-	}
+    }
 
-	private static void introduceContra(String hostServ, int portServ, String contra) {
+	private static void introduceContra(String hostServ, int portServ, String contra){
 		System.out.println("Buscando partida...");
-		try (Socket servidor = new Socket(hostServ, portServ);
-				ObjectInputStream is = new ObjectInputStream(servidor.getInputStream());
-				ObjectOutputStream os = new ObjectOutputStream(servidor.getOutputStream());) {
-			os.writeBytes(contra + "\n");
-			os.flush();
-			boolean ordenJug = is.readBoolean(); // true implica que va primero, false segundo. También decide cuál es
-													// servidor
+		try(Socket servidor = new Socket(hostServ, portServ);
+			
+		){
+			DataOutputStream dos = new DataOutputStream(servidor.getOutputStream());
+			dos.writeBytes(contra + "\n");
+			dos.flush();
+			
+			
+			ObjectOutputStream os = new ObjectOutputStream(servidor.getOutputStream());
+			ObjectInputStream is = new ObjectInputStream(servidor.getInputStream());
+			
+			boolean ordenJug=is.readBoolean(); //true implica que va primero, false segundo. También decide cuál es servidor
 			System.out.println("¡PARTIDA ENCONTRADA!");
 
-			if (ordenJug) {
+			if(ordenJug){
 				System.out.println("Jugador 1");
-				try (ServerSocket ss = new ServerSocket(0);) {
-					os.writeBytes(ss.getInetAddress().getHostAddress() + "\n");
+				try(ServerSocket ss= new ServerSocket(0);){
+					os.writeBytes(ss.getInetAddress().getHostAddress()+"\n");
 					os.writeInt(ss.getLocalPort());
 					os.flush();
-					Socket s = ss.accept();
-
+					Socket s= ss.accept();
 					jugador1(s);
 					s.close();
-					System.out.println("Partida pública se ejecuta aquí");
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			} else {
+				}catch(IOException e) {e.printStackTrace();}
+			}else{
 				System.out.println("Jugador 2");
-				String hostJug = is.readLine();
-				int portJug = is.readInt();
-				Socket s = new Socket(hostJug, portJug);
+				String hostJug= is.readLine();
+				int portJug=is.readInt();
+				Socket s=new Socket(hostJug,portJug);
 				jugador2(s);
 				s.close();
-				System.out.println("Partida pública se ejecuta aquí");
 			}
-
-		} catch (IOException e) {
+			
+		} catch(IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	private static void buscaPartida(String hostServ, int portServ) {
-		introduceContra(hostServ, portServ, "");
 	}
 
 	private static void jugador1(Socket s) {
@@ -135,9 +135,7 @@ public class Jugador {
 	
 			// Mientras el tablero sea null o el juego no haya terminado
 			while (t == null || !t.verificarJuegoTerminado()) {
-				miTurno = false;  // El jugador 2 espera su turno inicialmente
 				t = esperaTurno(is);  // Esperamos el tablero del jugador 1
-				//t.jugadorActual = 1;
 
 				if (t != null) {
 					juegaTurno(t, os);  // El jugador 2 juega su turno
@@ -151,12 +149,7 @@ public class Jugador {
 	}
 
 	private static void juegaTurno(Tablero t, ObjectOutputStream os) throws IOException {
-		if (!miTurno) {
-			System.out.println("Espera tu turno...");
-			return;
-		}
 	
-		try {
 			t.iniciarTurno();  // Inicia el turno para el jugador
 			System.out.println("Es tu turno: ");
 	
@@ -165,7 +158,7 @@ public class Jugador {
 				t.mostrarTablero();  // Muestra el estado del tablero
 				t.tiraDados();  // Tira los dados
 				t.mostrarDados();  // Muestra los dados resultantes
-	
+		// checkear     	os.writeObject(t);
 				if (t.vuelveATirar()) {
 					t.bloqueaDados();  // Permite volver a tirar dados si es necesario
 				} else {
@@ -182,20 +175,10 @@ public class Jugador {
 			System.out.println("Tablero enviado.");
 	
 			// El turno ha terminado, ahora es el turno del oponente
-			miTurno = false;
 			System.out.println("El turno ha terminado. Ahora es el turno del oponente.");
-		} catch (IOException e) {
-			System.out.println("Error al enviar el tablero: " + e.getMessage());
-			e.printStackTrace();
-		}
 	}
 	
 	private static  Tablero esperaTurno(ObjectInputStream is) {
-		if (miTurno) {
-			System.out.println("Es tu turno, no puedes esperar.");
-			return null;
-		}
-	
 		try {
 			// Recibir el tablero del oponente
 			System.out.println("Esperando el tablero del oponente...");
@@ -212,7 +195,6 @@ public class Jugador {
 	
 			// El turno del oponente ha terminado, ahora es el turno del jugador 1
 			System.out.println("El turno del oponente ha terminado. Ahora es tu turno.");
-			miTurno = true;  // Ahora es el turno del jugador 1
 			return t;
 		} catch (ClassNotFoundException | IOException e) {
 			System.out.println("Error al recibir el tablero: " + e.getMessage());
