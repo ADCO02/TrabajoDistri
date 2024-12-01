@@ -64,8 +64,7 @@ public class Tablero implements Serializable {
 
     public boolean vuelveATirar() {
         int volverATirar = -1; 
-        Scanner scanner = new Scanner(System.in); 
-    
+            
         while (volverATirar != 0 && volverATirar != 1) {  
             System.out.println("¿Quieres volver a tirar los dados restantes? (Sí: 1 / No: 0)");
             if (scanner.hasNextInt()) { 
@@ -98,7 +97,7 @@ public class Tablero implements Serializable {
             int bloquear = -1; 
     
             while (bloquear != 1 && bloquear != 0) {
-                System.out.print("¿Bloquear dado " + i + " ( Valor = " + dados[i] + " )? (Sí: 1 / No: 0): ");
+                System.out.print("¿Bloquear dado " + (i+1) + " ( Valor = " + dados[i] + " )? (Sí: 1 / No: 0): ");
                 if (scanner.hasNextInt()) { 
                     bloquear = scanner.nextInt();
                     if (bloquear == 1 || bloquear == 0) {
@@ -118,7 +117,7 @@ public class Tablero implements Serializable {
 
     public void mostrarBloqueados() {
         for (int i = 0; i < dados.length; i++) {
-            System.out.print("DADO BLOQUEADO " + i + " VALOR = "+ dadosBloqueados[i]);
+            System.out.print("DADO BLOQUEADO " + (i+1) + " VALOR = "+ dadosBloqueados[i]);
         }
         System.out.println();
     }
@@ -193,8 +192,11 @@ public class Tablero implements Serializable {
     public void mostrarDados() {
         System.out.print("Dados: ");
         for (int i = 0; i < dados.length; i++) {
+            if(i!=0){
+                System.out.println(", ");
+            }
             // String estado = dadosBloqueados[i] ? "(Bloqueado)" : "(Libre)";
-            System.out.print("DADO " + i + " : " +dados[i]+ " "); // + " " + estado + " ");
+            System.out.print("DADO " + (i+1) + " : " +dados[i]); // + " " + estado + " ");
         }
         System.out.println();
     }

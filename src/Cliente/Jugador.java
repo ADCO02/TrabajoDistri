@@ -1,6 +1,5 @@
 package Cliente;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -70,9 +69,7 @@ public class Jugador {
 
 	private static void introduceContra(String hostServ, int portServ, String contra){
 		System.out.println("Buscando partida...");
-		try(Socket servidor = new Socket(hostServ, portServ);
-			
-		){
+		try(Socket servidor = new Socket(hostServ, portServ)){
 			DataOutputStream dos = new DataOutputStream(servidor.getOutputStream());
 			dos.writeBytes(contra + "\n");
 			dos.flush();
@@ -90,17 +87,19 @@ public class Jugador {
 					os.writeBytes(ss.getInetAddress().getHostAddress()+"\n");
 					os.writeInt(ss.getLocalPort());
 					os.flush();
-					Socket s= ss.accept();
-					jugador1(s);
-					s.close();
+					servidor.close();
+					try(Socket s= ss.accept()){
+						jugador1(s);
+					}catch(IOException e) {e.printStackTrace();}
 				}catch(IOException e) {e.printStackTrace();}
 			}else{
 				System.out.println("Jugador 2");
 				String hostJug= is.readLine();
 				int portJug=is.readInt();
-				Socket s=new Socket(hostJug,portJug);
-				jugador2(s);
-				s.close();
+				servidor.close();
+				try(Socket s=new Socket(hostJug,portJug)){
+					jugador2(s);
+				}catch(IOException e) {e.printStackTrace();}
 			}
 			
 		} catch(IOException e) {
@@ -165,8 +164,6 @@ public class Jugador {
 			os.reset();
 			os.writeObject(t);
 			os.flush();  
-	
-			System.out.println("El turno ha terminado.");
 	}
 	
 	private static  Tablero esperaTurno(ObjectInputStream is) {

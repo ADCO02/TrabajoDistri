@@ -9,6 +9,7 @@ public class AtenderJugadores extends Thread {
 	private Socket s1;
 	private Socket s2;
 	public AtenderJugadores(Socket s1, Socket s2) {
+		super();
 		this.s1=s1;
 		this.s2=s2;
 	}
@@ -25,7 +26,6 @@ public class AtenderJugadores extends Thread {
 			out1.writeBoolean(true);
 			out1.flush();
 			out2.writeBoolean(false);
-			out2.flush();
 			//Enviar ip
 			out2.writeBytes(in1.readLine()+"\n");
 			// Enviar puerto a j2

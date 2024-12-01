@@ -2,8 +2,6 @@ package Servidor;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.HashMap;
 
@@ -11,6 +9,7 @@ public class PreguntaContra extends Thread{
 	private Socket s;
 	private HashMap<String,Socket> j;
 	public PreguntaContra(Socket socket, HashMap<String,Socket> jugadores) {
+		super();
 		s=socket;
 		j=jugadores;
 	}
