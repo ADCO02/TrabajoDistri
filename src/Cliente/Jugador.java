@@ -148,15 +148,22 @@ public class Jugador {
 			System.out.println("\nTU TURNO\n");
 	
 			while (!t.turnoTerminado()) {
-				t.mostrarTablero();  
-				t.tiraDados();
-				t.mostrarDados();
-				os.writeObject(t);
-				if (t.intentosLibres()&&t.vuelveATirar()){
-					t.bloqueaDados();
-					os.writeObject(t);
+				t.tiraDados();									//tira los dados
+				os.reset();
+				os.writeObject(t);								//le pasa el tablero al contrincante para que vea qué dados le han salido
+				if (t.intentosLibres()){
+					t.mostrarTablero();  						//muestra el tablero
+					t.mostrarDados();
+					if(t.vuelveATirar()){
+						t.bloqueaDados();							//elige los dados a bloquear para la siguiente tirada
+						os.reset();
+						os.writeObject(t);							//le pasa el tablero al contrincante para que vea qué dados ha bloqueado
+					}else{
+						t.eligeCasilla();							//elige la casilla de puntuación
+						t.terminaTurno();
+					}
 				} else {
-					t.eligeCasilla();
+					t.eligeCasilla();							//elige la casilla de puntuación
 					t.terminaTurno();
 				}
 			}
@@ -169,14 +176,15 @@ public class Jugador {
 	private static  Tablero esperaTurno(ObjectInputStream is) {
 		System.out.println("\nTURNO DE TU OPONENTE\n");
 		try {
-			Tablero t = (Tablero) is.readObject();
+			Tablero t = null;
 	
-			while (!t.turnoTerminado()) {
+			while (t==null||!t.turnoTerminado()) {
+				t=(Tablero) is.readObject();
 				System.out.println("Le han salido los siguientes dados:");
 				t.mostrarDados();
 				t = (Tablero) is.readObject(); 
 				if (!t.turnoTerminado()) {
-					System.out.println("El oponente ha bloqueados los siguientes dados:");
+					System.out.println("El oponente ha bloqueado los siguientes dados:");
 					t.mostrarBloqueados();  
 				}
 			}

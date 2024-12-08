@@ -4,14 +4,17 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
 
 public class PreguntaContra extends Thread{
 	private Socket s;
 	private HashMap<String,Socket> j;
-	public PreguntaContra(Socket socket, HashMap<String,Socket> jugadores) {
+	private ExecutorService pool;
+	public PreguntaContra(Socket socket, HashMap<String,Socket> jugadores, ExecutorService pool) {
 		super();
 		s=socket;
 		j=jugadores;
+		this.pool=pool;
 	}
 	public void run() {
 		try {
@@ -31,8 +34,7 @@ public class PreguntaContra extends Thread{
 					}
 					
 					j.remove(contra);
-					AtenderJugadores p = new AtenderJugadores (s, s2);
-					p.start();
+					pool.execute(new AtenderJugadores (s, s2));
 				}
 				
 				//si la contraseña no estaba ya, la mete

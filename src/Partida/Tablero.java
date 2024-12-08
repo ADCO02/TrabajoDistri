@@ -42,10 +42,9 @@ public class Tablero implements Serializable {
     }
 
     public void iniciarTurno() {
-    	this.intentos=2;
-        resetearDados(); // Asegúrate de que todos los dados estén desbloqueados
-        tiraDados();   // Lanza los dados al inicio del turno
-        turnoCompleto = false; // Resetea el flag al iniciar un nuevo turno
+    	this.intentos=2;        //establece los intentos restantes a 2
+        resetearDados();        // Asegúrate de que todos los dados estén desbloqueados
+        turnoCompleto = false;  // Resetea el flag al iniciar un nuevo turno
 
     }
 
@@ -116,8 +115,19 @@ public class Tablero implements Serializable {
     
 
     public void mostrarBloqueados() {
+        boolean aux = false;
         for (int i = 0; i < dados.length; i++) {
-            System.out.print("DADO BLOQUEADO " + (i+1) + " VALOR = "+ dadosBloqueados[i]);
+            if(dadosBloqueados[i]==true){
+                if(aux){
+                    System.out.print(", ");
+                }else{
+                    aux=true; //implica que ha bloqueado alguno
+                }
+                System.out.print("DADO "+(i+1)+" BLOQUEADO (valor=" + dados[i] + ")");
+            }
+        }
+        if(!aux){
+            System.out.println("No ha bloqueado ningun dado");
         }
         System.out.println();
     }
@@ -195,8 +205,7 @@ public class Tablero implements Serializable {
             if(i!=0){
                 System.out.print(", ");
             }
-            // String estado = dadosBloqueados[i] ? "(Bloqueado)" : "(Libre)";
-            System.out.print("DADO " + (i+1) + " : " +dados[i]); // + " " + estado + " ");
+            System.out.print("DADO " + (i+1) + ": " +dados[i]); 
         }
         System.out.println();
     }
@@ -288,11 +297,6 @@ public class Tablero implements Serializable {
         }
         return false;
     }
-    /*public void siguienteJugador() {
-        jugadorActual = (jugadorActual + 1) % numJugadores;
-        mostrarTablero();  // Actualiza el tablero para el siguiente jugador
-
-    }*/
 
 
     public void mostrarTablero() {
@@ -300,7 +304,7 @@ public class Tablero implements Serializable {
         for (int i = 0; i < combinaciones.length; i++) {
             String estadoJ1 = combinacionesCompletadas[0][i] ? String.valueOf(puntuaciones.get(0)[i]) : "Disponible";
             String estadoJ2 = combinacionesCompletadas[1][i] ? String.valueOf(puntuaciones.get(1)[i]) : "Disponible";
-            System.out.printf("%-15s %-15s %-15s\n", combinaciones[i], estadoJ1, estadoJ2);
+            System.out.printf("%-15s %-15s %-15s\n", i+": "+combinaciones[i], estadoJ1, estadoJ2);
         }
     }
 
@@ -308,15 +312,13 @@ public class Tablero implements Serializable {
         Arrays.fill(dadosBloqueados, false);
     }
 
- //  Método que devuelve un booleano si el turno ha terminado
- public void terminaTurno() {
-    System.out.println("El jugador " + (jugadorActual + 1) + " ha terminado su turno.");
-    //siguienteJugador();  // Cambiar al siguiente jugador.
-    jugadorActual = (jugadorActual + 1) % numJugadores;
+    public void terminaTurno() {
+        System.out.println("El jugador " + (jugadorActual + 1) + " ha terminado su turno.");
+        jugadorActual = (jugadorActual + 1) % numJugadores;
 
-    resetearDados();
-    turnoCompleto = true;  // El turno ha terminado
-}
+        resetearDados();
+        turnoCompleto = true; 
+    }
 
 
 
